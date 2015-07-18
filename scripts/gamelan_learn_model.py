@@ -23,6 +23,7 @@ def getopts(argv):
     npn = False
     npn_ratio = 0.0
 
+    fit_options['subsample_size'] = None
     for opt, arg in opts:
         print opt, arg
         if opt in ['-h', '--help']:

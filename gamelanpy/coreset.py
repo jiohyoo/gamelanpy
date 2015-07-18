@@ -5,6 +5,7 @@ import scipy.cluster
 import scipy.spatial
 import time
 
+
 def get_coreset(data, num_clusters, coreset_size, delta=0.1):
     '''
     Parameters

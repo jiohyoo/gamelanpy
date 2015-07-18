@@ -4,10 +4,11 @@ import scipy.linalg
 import scipy.cluster
 from sklearn.mixture import GMM
 from coreset import get_coreset
-from sklearn.cluster import KMeans
 import nonparanormal
 
 from sklearn.covariance import graph_lasso
+from weighted_kmeans import WeightedKMeans
+
 
 def _learn_sparse_gaussian(data, l1_penalty_range, l1_search_depth, l1_search_repeat, atol):
     '''
@@ -51,8 +52,6 @@ def _learn_sparse_gaussian(data, l1_penalty_range, l1_search_depth, l1_search_re
     pre[np.abs(pre) < atol] = 0.
     cov = np.linalg.inv(pre)
     return cov, pre, l1_penalty
-
-
 
 
 class SparseGMM(GMM):
@@ -116,16 +115,16 @@ class SparseGMM(GMM):
 
         if subsample_method == 'coreset':
             coreset, weights = get_coreset(X, self.n_components, subsample_size)
-            kmeans = KMeans(n_clusters=self.n_components)
-            kmeans.fit(coreset, gamma=weights)
+            kmeans = WeightedKMeans(n_clusters=self.n_components)
+            kmeans.fit(coreset, weights=weights)
             X_idx = kmeans.predict(X)
 
             samples = X
             sample_idx = X_idx
         elif subsample_method == 'coreset2':
             coreset, weights = get_coreset(X, self.n_components, subsample_size)
-            kmeans = KMeans(n_clusters=self.n_components)
-            kmeans.fit(coreset, gamma=weights)
+            kmeans = WeightedKMeans(n_clusters=self.n_components)
+            kmeans.fit(coreset, weights=weights)
             coreset_idx = kmeans.predict(coreset)
 
             samples = coreset
@@ -133,13 +132,13 @@ class SparseGMM(GMM):
 
         elif subsample_method == 'uniform':
             subsamples = X[np.random.permutation(n_frames)[:subsample_size], :]
-            kmeans = KMeans(n_clusters=self.n_components)
+            kmeans = WeightedKMeans(n_clusters=self.n_components)
             kmeans.fit(subsamples)
 
             samples = X
             sample_idx = kmeans.predict(X)
         elif subsample_method == 'None':
-            kmeans = KMeans(n_clusters=self.n_components)
+            kmeans = WeightedKMeans(n_clusters=self.n_components)
             kmeans.fit(X)
             samples = X
             sample_idx = kmeans.predict(X)
